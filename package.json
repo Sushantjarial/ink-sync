@@ -1,5 +1,5 @@
 {
-  "name": "my-turborepo",
+  "name": "ink-sync",
   "private": true,
   "scripts": {
     "build": "turbo run build",
