@@ -17,7 +17,7 @@ export const siginSchema=z.object({
 export type createRoomSchema=z.infer<typeof createRoomSchema>
 export const createRoomSchema=z.object({
     slog:z.string().min(3).max(20),
-    userName:z.string().min(3).max(20)
+    adminId:z.string().min(3)
         
 })
 
