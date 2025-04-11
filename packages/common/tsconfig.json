@@ -4,6 +4,6 @@
         "rootDir": "./src",
         "outDir": "./dist",
     },
-    "include": ["./src/**/*"]
+    "include": ["./src/**/*", "../common-backend/src/middlewares.ts"]
 
 }

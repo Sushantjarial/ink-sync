@@ -1,8 +1,18 @@
 import { WebSocketServer } from "ws";
-
-const wss= new WebSocketServer({port:8080});
 import {prisma} from "@repo/db/client"
+const wss= new WebSocketServer({port:8080});
+type user= {
+    socket :WebSocket,
+    rooms:[]
+    username:string
+}
+const users:Map<string,user>=new Map()
+wss.on("connection",(socket,request)=>{
 
-wss.on("connection",(socket)=>{
-    console.log("connected")
+
+
+
+
+
+
 })
