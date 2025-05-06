@@ -1,9 +1,7 @@
 import express from "express";
-import {middleware} from "./middlewares"
 import {JWT_SECRET} from "@repo/common-backend/config"
 import {prisma} from "@repo/db/client"
-import {Request, Response} from "express"
-import {createRoomSchema, signupSchema} from "@repo/common/types"
+import {createRoomSchema} from "@repo/common/types"
 import jwt from "jsonwebtoken"
 
 
@@ -108,7 +106,7 @@ app.post("/createRoom",async(req,res)=>{
         try{
             const room=await prisma.room.create({
                 data:{
-                    slog:req.body.slog,
+                    slug:req.body.slug,
                     adminId:req.body.adminId
                     
                 }
@@ -173,7 +171,7 @@ app.get("/rooms/:slug",async(req,res)=>{
     try{
         const room=await prisma.room.findUnique({
             where:{
-                slog:slug
+                slug:slug
             }
         })
         if(!room){
@@ -201,6 +199,6 @@ app.get("/rooms/:slug",async(req,res)=>{
 })
 
 
-app.listen(3000);
+app.listen(4000);
 
 
