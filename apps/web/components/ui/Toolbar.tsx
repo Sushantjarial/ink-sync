@@ -26,8 +26,8 @@ const  activeTool=useBoardStore((state)=>state.activeTool)
   const tools = [
     { id: 'line', icon: <MousePointer size={20} />, tooltip: 'Selection Tool (V)' },
     { id: 'rectangle', icon: <Square size={20} />, tooltip: 'Rectangle (R)' },
-    { id: 'circle', icon: <Circle size={20} />, tooltip: 'Ellipse (E)' },
-    { id: 'triangle', icon: <Triangle size={20} />, tooltip: 'Triangle (T)' },
+    { id: 'ellipse', icon: <Circle size={20} />, tooltip: 'Ellipse (E)' },
+    { id: 'polygon', icon: <Triangle size={20} />, tooltip: 'Triangle (T)' },
     { id: 'draw', icon: <PenTool size={20} />, tooltip: 'Pencil (P)' },
     { id: 'text', icon: <Type size={20} />, tooltip: 'Text (A)' },
     { id: 'hand', icon: <Hand size={20} />, tooltip: 'Hand Tool (H)' },

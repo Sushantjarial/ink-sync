@@ -1,12 +1,16 @@
-import Board from "@/components/Board";
 import Image from "next/image";
 import { FloatingDock } from "@/components/ui/floating-dock";
-import { IconBrandGithub, IconBrandX, IconExchange, IconHome, IconNewSection, IconTerminal2 } from "@tabler/icons-react";
+import {
+  IconBrandGithub,
+  IconBrandX,
+  IconExchange,
+  IconHome,
+  IconNewSection,
+  IconTerminal2,
+} from "@tabler/icons-react";
 import Toolbar from "@/components/ui/Toolbar";
+import Board from "@/components/Board";
 export default function Home() {
-  
-
-
   return (
   <div>
     <div>

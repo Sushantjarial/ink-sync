@@ -1,5 +1,15 @@
-import Link from "next/link"
-import { Pencil, Square, Circle, ArrowRight, Users, Share2, Download, Layers, Github } from "lucide-react"
+import Link from "next/link";
+import {
+  Pencil,
+  Square,
+  Circle,
+  ArrowRight,
+  Users,
+  Share2,
+  Download,
+  Layers,
+  Github,
+} from "lucide-react";
 
 export default function LandingPage() {
   return (
@@ -8,19 +18,31 @@ export default function LandingPage() {
         <div className="container flex h-16 items-center justify-between px-4 md:px-6">
           <div className="flex items-center gap-2">
             <Pencil className="h-6 w-6 text-purple-600" />
-            <span className="text-xl font-bold">DrawCanvas</span>
+            <span className="text-xl font-bold">InkSync</span>
           </div>
           <nav className="hidden md:flex gap-6">
-            <Link href="#features" className="text-sm font-medium hover:text-purple-600 transition-colors">
+            <Link
+              href="#features"
+              className="text-sm font-medium hover:text-purple-600 transition-colors"
+            >
               Features
             </Link>
-            <Link href="#how-it-works" className="text-sm font-medium hover:text-purple-600 transition-colors">
+            <Link
+              href="#how-it-works"
+              className="text-sm font-medium hover:text-purple-600 transition-colors"
+            >
               How It Works
             </Link>
-            <Link href="#testimonials" className="text-sm font-medium hover:text-purple-600 transition-colors">
+            <Link
+              href="#testimonials"
+              className="text-sm font-medium hover:text-purple-600 transition-colors"
+            >
               Testimonials
             </Link>
-            <Link href="#pricing" className="text-sm font-medium hover:text-purple-600 transition-colors">
+            <Link
+              href="#pricing"
+              className="text-sm font-medium hover:text-purple-600 transition-colors"
+            >
               Pricing
             </Link>
           </nav>
@@ -42,11 +64,13 @@ export default function LandingPage() {
             <div className="grid gap-12 md:grid-cols-2 md:gap-16 items-center">
               <div className="flex flex-col gap-4">
                 <h1 className="text-4xl md:text-6xl font-bold tracking-tighter animate-fade-up animate-once animate-duration-[800ms] animate-delay-100">
-                  Create, Collaborate, <span className="text-purple-600">Draw</span> Together
+                  Create, Collaborate,{" "}
+                  <span className="text-purple-600">Draw</span> Together
                 </h1>
                 <p className="text-gray-500 md:text-xl max-w-[600px] animate-fade-up animate-once animate-duration-[800ms] animate-delay-200">
-                  A beautiful, intuitive whiteboard for creating diagrams, sketches, and collaborative drawings. Just
-                  like Excalidraw, but better.
+                  A beautiful, intuitive whiteboard for creating diagrams,
+                  sketches, and collaborative drawings. Just like Excalidraw,
+                  but better.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 pt-4 animate-fade-up animate-once animate-duration-[800ms] animate-delay-300">
                   <Link
@@ -86,7 +110,11 @@ export default function LandingPage() {
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg"
                           >
-                            <path d="M0 15H90M90 15L75 2M90 15L75 28" stroke="#8B5CF6" strokeWidth="3" />
+                            <path
+                              d="M0 15H90M90 15L75 2M90 15L75 28"
+                              stroke="#8B5CF6"
+                              strokeWidth="3"
+                            />
                           </svg>
                         </div>
                         <div className="animate-fade-in absolute top-1/4 left-1/2 text-sm font-medium text-gray-600">
@@ -122,8 +150,9 @@ export default function LandingPage() {
                   Everything you need to draw and create
                 </h2>
                 <p className="max-w-[900px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  Our platform provides all the tools you need to bring your ideas to life, collaborate with others, and
-                  share your creations.
+                  Our platform provides all the tools you need to bring your
+                  ideas to life, collaborate with others, and share your
+                  creations.
                 </p>
               </div>
             </div>
@@ -134,7 +163,10 @@ export default function LandingPage() {
                 </div>
                 <div className="grid gap-1">
                   <h3 className="text-xl font-bold">Intuitive Drawing</h3>
-                  <p className="text-gray-500">Simple yet powerful drawing tools that feel natural and responsive.</p>
+                  <p className="text-gray-500">
+                    Simple yet powerful drawing tools that feel natural and
+                    responsive.
+                  </p>
                 </div>
               </div>
               <div className="grid gap-4 group hover:bg-purple-50 p-6 rounded-lg transition-colors">
@@ -144,7 +176,8 @@ export default function LandingPage() {
                 <div className="grid gap-1">
                   <h3 className="text-xl font-bold">Real-time Collaboration</h3>
                   <p className="text-gray-500">
-                    Work together with your team in real-time, seeing changes as they happen.
+                    Work together with your team in real-time, seeing changes as
+                    they happen.
                   </p>
                 </div>
               </div>
@@ -154,7 +187,10 @@ export default function LandingPage() {
                 </div>
                 <div className="grid gap-1">
                   <h3 className="text-xl font-bold">Easy Sharing</h3>
-                  <p className="text-gray-500">Share your creations with a simple link or export to various formats.</p>
+                  <p className="text-gray-500">
+                    Share your creations with a simple link or export to various
+                    formats.
+                  </p>
                 </div>
               </div>
               <div className="grid gap-4 group hover:bg-purple-50 p-6 rounded-lg transition-colors">
@@ -164,7 +200,8 @@ export default function LandingPage() {
                 <div className="grid gap-1">
                   <h3 className="text-xl font-bold">Layers & Components</h3>
                   <p className="text-gray-500">
-                    Organize your work with layers and reusable components for complex diagrams.
+                    Organize your work with layers and reusable components for
+                    complex diagrams.
                   </p>
                 </div>
               </div>
@@ -174,7 +211,10 @@ export default function LandingPage() {
                 </div>
                 <div className="grid gap-1">
                   <h3 className="text-xl font-bold">Multiple Export Options</h3>
-                  <p className="text-gray-500">Export your drawings as PNG, SVG, or PDF with just a few clicks.</p>
+                  <p className="text-gray-500">
+                    Export your drawings as PNG, SVG, or PDF with just a few
+                    clicks.
+                  </p>
                 </div>
               </div>
               <div className="grid gap-4 group hover:bg-purple-50 p-6 rounded-lg transition-colors">
@@ -184,7 +224,8 @@ export default function LandingPage() {
                 <div className="grid gap-1">
                   <h3 className="text-xl font-bold">Open Source</h3>
                   <p className="text-gray-500">
-                    Built on open source principles, allowing for community contributions and transparency.
+                    Built on open source principles, allowing for community
+                    contributions and transparency.
                   </p>
                 </div>
               </div>
@@ -200,9 +241,12 @@ export default function LandingPage() {
                 <div className="inline-block rounded-lg bg-purple-100 px-3 py-1 text-sm text-purple-600">
                   Simple Process
                 </div>
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">How DrawCanvas Works</h2>
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
+                  How DrawCanvas Works
+                </h2>
                 <p className="max-w-[900px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  Get started in seconds and bring your ideas to life with our intuitive drawing platform.
+                  Get started in seconds and bring your ideas to life with our
+                  intuitive drawing platform.
                 </p>
               </div>
             </div>
@@ -217,7 +261,8 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-xl font-bold">Create a Canvas</h3>
                 <p className="text-gray-500">
-                  Start with a blank canvas or choose from our templates to kickstart your project.
+                  Start with a blank canvas or choose from our templates to
+                  kickstart your project.
                 </p>
               </div>
 
@@ -230,7 +275,8 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-xl font-bold">Draw & Collaborate</h3>
                 <p className="text-gray-500">
-                  Use our intuitive tools to draw, and invite others to collaborate in real-time.
+                  Use our intuitive tools to draw, and invite others to
+                  collaborate in real-time.
                 </p>
               </div>
 
@@ -240,7 +286,8 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-xl font-bold">Share & Export</h3>
                 <p className="text-gray-500">
-                  Share your creation with a link or export it in various formats for your needs.
+                  Share your creation with a link or export it in various
+                  formats for your needs.
                 </p>
               </div>
             </div>
@@ -255,10 +302,13 @@ export default function LandingPage() {
                 <div className="inline-block rounded-lg bg-purple-100 px-3 py-1 text-sm text-purple-600 w-fit">
                   Interactive Demo
                 </div>
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">See DrawCanvas in Action</h2>
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">
+                  See DrawCanvas in Action
+                </h2>
                 <p className="text-gray-500 max-w-[600px]">
-                  Our intuitive interface makes it easy to create beautiful diagrams, flowcharts, and sketches. Try it
-                  out and see for yourself!
+                  Our intuitive interface makes it easy to create beautiful
+                  diagrams, flowcharts, and sketches. Try it out and see for
+                  yourself!
                 </p>
                 <ul className="space-y-2 text-gray-500">
                   <li className="flex items-center gap-2">
@@ -295,7 +345,9 @@ export default function LandingPage() {
                             <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
                             <div className="w-3 h-3 rounded-full bg-green-400"></div>
                           </div>
-                          <div className="mx-auto text-xs text-gray-500">DrawCanvas - Interactive Demo</div>
+                          <div className="mx-auto text-xs text-gray-500">
+                            DrawCanvas - Interactive Demo
+                          </div>
                         </div>
                         <div className="pt-8 p-4 w-full h-full">
                           <div className="flex gap-2 absolute top-10 left-4">
@@ -320,7 +372,11 @@ export default function LandingPage() {
                               fill="none"
                               xmlns="http://www.w3.org/2000/svg"
                             >
-                              <path d="M0 15H110M110 15L95 2M110 15L95 28" stroke="#8B5CF6" strokeWidth="3" />
+                              <path
+                                d="M0 15H110M110 15L95 2M110 15L95 28"
+                                stroke="#8B5CF6"
+                                strokeWidth="3"
+                              />
                             </svg>
                           </div>
 
@@ -351,9 +407,12 @@ export default function LandingPage() {
                 <div className="inline-block rounded-lg bg-purple-100 px-3 py-1 text-sm text-purple-600">
                   Testimonials
                 </div>
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">What Our Users Say</h2>
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
+                  What Our Users Say
+                </h2>
                 <p className="max-w-[900px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  Don't just take our word for it. Here's what people are saying about DrawCanvas.
+                  Don't just take our word for it. Here's what people are saying
+                  about DrawCanvas.
                 </p>
               </div>
             </div>
@@ -362,7 +421,9 @@ export default function LandingPage() {
               <div className="flex flex-col gap-4 p-6 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center gap-4">
                   <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center">
-                    <span className="text-lg font-bold text-purple-600">JD</span>
+                    <span className="text-lg font-bold text-purple-600">
+                      JD
+                    </span>
                   </div>
                   <div>
                     <h4 className="font-bold">Jane Doe</h4>
@@ -370,8 +431,9 @@ export default function LandingPage() {
                   </div>
                 </div>
                 <p className="text-gray-600 italic">
-                  "DrawCanvas has completely transformed how our team collaborates on design projects. The intuitive
-                  interface and real-time collaboration features are game-changers."
+                  "DrawCanvas has completely transformed how our team
+                  collaborates on design projects. The intuitive interface and
+                  real-time collaboration features are game-changers."
                 </p>
                 <div className="flex text-yellow-400">
                   <svg
@@ -430,7 +492,9 @@ export default function LandingPage() {
               <div className="flex flex-col gap-4 p-6 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center gap-4">
                   <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center">
-                    <span className="text-lg font-bold text-purple-600">JS</span>
+                    <span className="text-lg font-bold text-purple-600">
+                      JS
+                    </span>
                   </div>
                   <div>
                     <h4 className="font-bold">John Smith</h4>
@@ -438,8 +502,9 @@ export default function LandingPage() {
                   </div>
                 </div>
                 <p className="text-gray-600 italic">
-                  "As a developer, I appreciate how easy it is to create diagrams for documentation. The export options
-                  are fantastic, and the UI is clean and intuitive."
+                  "As a developer, I appreciate how easy it is to create
+                  diagrams for documentation. The export options are fantastic,
+                  and the UI is clean and intuitive."
                 </p>
                 <div className="flex text-yellow-400">
                   <svg
@@ -508,7 +573,9 @@ export default function LandingPage() {
               <div className="flex flex-col gap-4 p-6 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center gap-4">
                   <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center">
-                    <span className="text-lg font-bold text-purple-600">AR</span>
+                    <span className="text-lg font-bold text-purple-600">
+                      AR
+                    </span>
                   </div>
                   <div>
                     <h4 className="font-bold">Alex Rodriguez</h4>
@@ -516,8 +583,9 @@ export default function LandingPage() {
                   </div>
                 </div>
                 <p className="text-gray-600 italic">
-                  "DrawCanvas has simplified our project planning process. Being able to collaborate in real-time with
-                  my team has increased our productivity tenfold."
+                  "DrawCanvas has simplified our project planning process. Being
+                  able to collaborate in real-time with my team has increased
+                  our productivity tenfold."
                 </p>
                 <div className="flex text-yellow-400">
                   <svg
@@ -581,10 +649,15 @@ export default function LandingPage() {
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
-                <div className="inline-block rounded-lg bg-purple-100 px-3 py-1 text-sm text-purple-600">Pricing</div>
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Simple, Transparent Pricing</h2>
+                <div className="inline-block rounded-lg bg-purple-100 px-3 py-1 text-sm text-purple-600">
+                  Pricing
+                </div>
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
+                  Simple, Transparent Pricing
+                </h2>
                 <p className="max-w-[900px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  Choose the plan that's right for you and start creating amazing diagrams today.
+                  Choose the plan that's right for you and start creating
+                  amazing diagrams today.
                 </p>
               </div>
             </div>
@@ -593,7 +666,9 @@ export default function LandingPage() {
               <div className="flex flex-col p-6 bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                 <div className="mb-4">
                   <h3 className="text-xl font-bold">Free</h3>
-                  <p className="text-gray-500 mt-1">For individuals just getting started</p>
+                  <p className="text-gray-500 mt-1">
+                    For individuals just getting started
+                  </p>
                 </div>
                 <div className="mb-4">
                   <span className="text-4xl font-bold">$0</span>
@@ -666,7 +741,9 @@ export default function LandingPage() {
                 </div>
                 <div className="mb-4">
                   <h3 className="text-xl font-bold">Pro</h3>
-                  <p className="text-gray-500 mt-1">For professionals and small teams</p>
+                  <p className="text-gray-500 mt-1">
+                    For professionals and small teams
+                  </p>
                 </div>
                 <div className="mb-4">
                   <span className="text-4xl font-bold">$12</span>
@@ -770,7 +847,9 @@ export default function LandingPage() {
               <div className="flex flex-col p-6 bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                 <div className="mb-4">
                   <h3 className="text-xl font-bold">Enterprise</h3>
-                  <p className="text-gray-500 mt-1">For organizations and large teams</p>
+                  <p className="text-gray-500 mt-1">
+                    For organizations and large teams
+                  </p>
                 </div>
                 <div className="mb-4">
                   <span className="text-4xl font-bold">$29</span>
@@ -879,9 +958,12 @@ export default function LandingPage() {
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Ready to Start Drawing?</h2>
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
+                  Ready to Start Drawing?
+                </h2>
                 <p className="max-w-[900px] text-purple-100 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  Join thousands of users who are already creating amazing diagrams with DrawCanvas.
+                  Join thousands of users who are already creating amazing
+                  diagrams with DrawCanvas.
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-3 pt-4">
@@ -912,7 +994,8 @@ export default function LandingPage() {
                 <span className="text-xl font-bold">DrawCanvas</span>
               </div>
               <p className="text-sm text-gray-500">
-                The intuitive drawing tool for teams and individuals. Create beautiful diagrams, flowcharts, and more.
+                The intuitive drawing tool for teams and individuals. Create
+                beautiful diagrams, flowcharts, and more.
               </p>
               <div className="flex gap-4">
                 <Link href="#" className="text-gray-500 hover:text-purple-600">
@@ -971,75 +1054,117 @@ export default function LandingPage() {
               </div>
             </div>
             <div className="space-y-4">
-              <h4 className="text-sm font-bold uppercase tracking-wider">Product</h4>
+              <h4 className="text-sm font-bold uppercase tracking-wider">
+                Product
+              </h4>
               <ul className="space-y-2">
                 <li>
-                  <Link href="#" className="text-sm text-gray-500 hover:text-purple-600">
+                  <Link
+                    href="#"
+                    className="text-sm text-gray-500 hover:text-purple-600"
+                  >
                     Features
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-sm text-gray-500 hover:text-purple-600">
+                  <Link
+                    href="#"
+                    className="text-sm text-gray-500 hover:text-purple-600"
+                  >
                     Pricing
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-sm text-gray-500 hover:text-purple-600">
+                  <Link
+                    href="#"
+                    className="text-sm text-gray-500 hover:text-purple-600"
+                  >
                     Templates
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-sm text-gray-500 hover:text-purple-600">
+                  <Link
+                    href="#"
+                    className="text-sm text-gray-500 hover:text-purple-600"
+                  >
                     Integrations
                   </Link>
                 </li>
               </ul>
             </div>
             <div className="space-y-4">
-              <h4 className="text-sm font-bold uppercase tracking-wider">Resources</h4>
+              <h4 className="text-sm font-bold uppercase tracking-wider">
+                Resources
+              </h4>
               <ul className="space-y-2">
                 <li>
-                  <Link href="#" className="text-sm text-gray-500 hover:text-purple-600">
+                  <Link
+                    href="#"
+                    className="text-sm text-gray-500 hover:text-purple-600"
+                  >
                     Documentation
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-sm text-gray-500 hover:text-purple-600">
+                  <Link
+                    href="#"
+                    className="text-sm text-gray-500 hover:text-purple-600"
+                  >
                     Tutorials
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-sm text-gray-500 hover:text-purple-600">
+                  <Link
+                    href="#"
+                    className="text-sm text-gray-500 hover:text-purple-600"
+                  >
                     Blog
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-sm text-gray-500 hover:text-purple-600">
+                  <Link
+                    href="#"
+                    className="text-sm text-gray-500 hover:text-purple-600"
+                  >
                     Support
                   </Link>
                 </li>
               </ul>
             </div>
             <div className="space-y-4">
-              <h4 className="text-sm font-bold uppercase tracking-wider">Company</h4>
+              <h4 className="text-sm font-bold uppercase tracking-wider">
+                Company
+              </h4>
               <ul className="space-y-2">
                 <li>
-                  <Link href="#" className="text-sm text-gray-500 hover:text-purple-600">
+                  <Link
+                    href="#"
+                    className="text-sm text-gray-500 hover:text-purple-600"
+                  >
                     About
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-sm text-gray-500 hover:text-purple-600">
+                  <Link
+                    href="#"
+                    className="text-sm text-gray-500 hover:text-purple-600"
+                  >
                     Careers
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-sm text-gray-500 hover:text-purple-600">
+                  <Link
+                    href="#"
+                    className="text-sm text-gray-500 hover:text-purple-600"
+                  >
                     Privacy
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-sm text-gray-500 hover:text-purple-600">
+                  <Link
+                    href="#"
+                    className="text-sm text-gray-500 hover:text-purple-600"
+                  >
                     Terms
                   </Link>
                 </li>
@@ -1047,15 +1172,26 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="mt-8 border-t pt-8 flex flex-col sm:flex-row justify-between items-center">
-            <p className="text-xs text-gray-500">&copy; {new Date().getFullYear()} DrawCanvas. All rights reserved.</p>
+            <p className="text-xs text-gray-500">
+              &copy; {new Date().getFullYear()} DrawCanvas. All rights reserved.
+            </p>
             <div className="flex gap-4 mt-4 sm:mt-0">
-              <Link href="#" className="text-xs text-gray-500 hover:text-purple-600">
+              <Link
+                href="#"
+                className="text-xs text-gray-500 hover:text-purple-600"
+              >
                 Privacy Policy
               </Link>
-              <Link href="#" className="text-xs text-gray-500 hover:text-purple-600">
+              <Link
+                href="#"
+                className="text-xs text-gray-500 hover:text-purple-600"
+              >
                 Terms of Service
               </Link>
-              <Link href="#" className="text-xs text-gray-500 hover:text-purple-600">
+              <Link
+                href="#"
+                className="text-xs text-gray-500 hover:text-purple-600"
+              >
                 Cookie Policy
               </Link>
             </div>
@@ -1063,6 +1199,5 @@ export default function LandingPage() {
         </div>
       </footer>
     </div>
-  )
+  );
 }
-
