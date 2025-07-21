@@ -14,7 +14,7 @@ import {
   Undo,
   Redo,
   Download,
-  Share2,
+  PenLine,
 } from "lucide-react";
 import { useBoardStore } from "@/store/store";
 
@@ -26,8 +26,8 @@ export default function Toolbar() {
   const tools = [
     {
       id: "line",
-      icon: <MousePointer size={20} />,
-      tooltip: "Selection Tool (V)",
+      icon: <PenLine size={20} />,
+      tooltip: "Line (L)",
     },
     { id: "rectangle", icon: <Square size={20} />, tooltip: "Rectangle (R)" },
     { id: "ellipse", icon: <Circle size={20} />, tooltip: "Ellipse (E)" },
