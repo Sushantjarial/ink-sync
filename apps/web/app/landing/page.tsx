@@ -21,7 +21,7 @@ export default function LandingPage() {
             <span className="text-xl font-bold">InkSync</span>
           </div>
           <nav className="hidden md:flex gap-6">
-            <Link
+            {/* <Link
               href="#features"
               className="text-sm font-medium hover:text-purple-600 transition-colors"
             >
@@ -32,11 +32,11 @@ export default function LandingPage() {
               className="text-sm font-medium hover:text-purple-600 transition-colors"
             >
               How It Works
-            </Link>
+            </Link> */}
           </nav>
           <div className="flex items-center gap-4">
             <Link
-              href="#try-now"
+              href="/"
               className="inline-flex h-9 items-center justify-center rounded-md bg-purple-600 px-4 py-2 text-sm font-medium text-white shadow transition-colors hover:bg-purple-700 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-700"
             >
               Try Now
@@ -62,17 +62,17 @@ export default function LandingPage() {
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 pt-4 animate-fade-up animate-once animate-duration-[800ms] animate-delay-300">
                   <Link
-                    href="#try-now"
+                    href="/"
                     className="inline-flex h-10 items-center justify-center rounded-md bg-purple-600 px-8 text-sm font-medium text-white shadow transition-colors hover:bg-purple-700 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-700"
                   >
                     Start Drawing Now
                   </Link>
-                  <Link
+                  {/* <Link
                     href="#learn-more"
                     className="inline-flex h-10 items-center justify-center rounded-md border border-gray-200 bg-white px-8 text-sm font-medium shadow-sm transition-colors hover:bg-gray-100 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-950"
                   >
                     Learn More
-                  </Link>
+                  </Link> */}
                 </div>
               </div>
               <div className="relative group animate-fade-left animate-once animate-duration-[800ms] animate-delay-300">
@@ -89,8 +89,8 @@ export default function LandingPage() {
                       </div>
                       <div className="pt-8 p-4 w-full h-full">
                         <div className="animate-draw-line w-32 h-32 border-2 border-purple-500 rounded-md absolute top-1/2 left-1/4 transform -translate-x-1/2 -translate-y-1/2"></div>
-                        <div className="animate-draw-circle w-24 h-24 border-2 border-pink-500 rounded-full absolute top-1/3 right-1/3"></div>
-                        <div className="animate-draw-arrow absolute bottom-1/3 right-1/4">
+                        <div className="animate-draw-line w-24 h-24 border-2 border-pink-500 rounded-full absolute top-1/3 right-1/3"></div>
+                        <div className="animate-draw-line absolute top-1/3 right-1/8  ">
                           <svg
                             width="100"
                             height="30"
@@ -105,12 +105,8 @@ export default function LandingPage() {
                             />
                           </svg>
                         </div>
-                        <div className="animate-fade-in absolute top-1/4 left-1/2 text-sm font-medium text-gray-600">
-                          Whiteboard
-                        </div>
-                        <div className="animate-fade-in animate-delay-300 absolute bottom-1/4 right-1/3 text-sm font-medium text-gray-600">
-                          Diagram
-                        </div>
+                        <div className="animate-fade-in absolute top-1/4 left-1/2 text-sm font-medium text-gray-600"></div>
+                        <div className="animate-fade-in animate-delay-300 absolute bottom-1/4 right-1/3 text-sm font-medium text-gray-600"></div>
                       </div>
                     </div>
                   </div>
@@ -245,7 +241,6 @@ export default function LandingPage() {
                   <div className="flex h-20 w-20 items-center justify-center rounded-full bg-purple-100 text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-colors">
                     <span className="text-2xl font-bold">1</span>
                   </div>
-                  <div className="absolute top-1/2 left-full h-0.5 w-full bg-purple-200 hidden md:block"></div>
                 </div>
                 <h3 className="text-xl font-bold">Create a Canvas</h3>
                 <p className="text-gray-500">
@@ -259,7 +254,6 @@ export default function LandingPage() {
                   <div className="flex h-20 w-20 items-center justify-center rounded-full bg-purple-100 text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-colors">
                     <span className="text-2xl font-bold">2</span>
                   </div>
-                  <div className="absolute top-1/2 left-full h-0.5 w-full bg-purple-200 hidden md:block"></div>
                 </div>
                 <h3 className="text-xl font-bold">Draw & Collaborate</h3>
                 <p className="text-gray-500">
