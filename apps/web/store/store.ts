@@ -45,13 +45,33 @@ export type Shape =
       points: { x: number; y: number }[]; // 3 points for triangle
     };
 
-type activeTool = "rectangle" | "ellipse" | "line" | "text" | "polygon";
+type activeTool =
+  | "rectangle"
+  | "ellipse"
+  | "line"
+  | "text"
+  | "polygon"
+  | "hand"
+  | "eraser"
+  | "draw";
+
+type Room = {
+  id: number;
+  slug: string;
+  adminId: string | null;
+  ownerToken: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
 
 const BoardState = (set: any, get: any) => ({
   activeTool: "" as activeTool,
   shapes: [] as Shape[],
   history: [] as Shape[][],
   future: [] as Shape[][],
+  room: null as Room | null,
+  roomToken: null as string | null,
+  setRoom: (room: Room, roomToken: string) => set({ room, roomToken }),
   setActiveTool: (toolId: string) => set({ activeTool: toolId }),
   setShape: (shape: Shape) =>
     set((state: any) => ({
