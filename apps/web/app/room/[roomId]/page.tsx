@@ -17,9 +17,12 @@ export default function Draw() {
           userId: "12345", // Replace with actual user ID
           userName: "testUser", // Replace with actual user name
           roomToken:
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb29tSWQiOiIxIiwiaWF0IjoxNzU0MDcwNTA5fQ.ilQ3scHhSL-Ue-HP-prnoU14Hc9XhFyitJb3G11cHQ4", // Replace with actual room token
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb29tSWQiOiIzIiwiaWF0IjoxNzU0ODk1Nzc0fQ.5m47n4KooJ7ZbKDX4zNakKeWvtdXk3XmXcoqpaVbBFg", // Replace with actual room token
         })
       );
+    };
+    ws.onclose = (e) => {
+      console.log("ws closed", e);
     };
 
     return () => {

@@ -1,15 +1,8 @@
 "use client";
 import { useBoardStore } from "@/store/store";
 import { Shape } from "@/store/store";
-import { div } from "motion/react-client";
-import {
-  act,
-  MouseEventHandler,
-  use,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+
+import { useEffect, useRef, useState } from "react";
 
 export default function Board() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -24,6 +17,9 @@ export default function Board() {
   const removeShape = useBoardStore((state) => state.removeShape);
   const undo = useBoardStore((state) => state.undo);
   const redo = useBoardStore((state) => state.redo);
+  const selectedIndex = useBoardStore((state) => state.selectedIndex);
+  const setSelectedIndex = useBoardStore((state) => state.setSelectedIndex);
+  const moveShape = useBoardStore((state) => state.moveShape);
 
   // Pan state for hand tool
   const [pan, setPan] = useState({ x: 0, y: 0 });
@@ -47,8 +43,8 @@ export default function Board() {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    clearCanvas(existingShapes, canvas, ctx, pan);
-  }, [existingShapes, pan]);
+    clearCanvas(existingShapes, canvas, ctx, pan, selectedIndex);
+  }, [existingShapes, pan, selectedIndex]);
 
   // Draw preview shape while drawing
   useEffect(() => {
@@ -56,7 +52,7 @@ export default function Board() {
     if (!canvas || (!isDrawing && !isPanning) || !start || !current) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    clearCanvas(existingShapes, canvas, ctx, pan);
+    clearCanvas(existingShapes, canvas, ctx, pan, selectedIndex);
     ctx.strokeStyle = "rgba(255, 255, 255)";
     const width = current.x - start.x;
     const height = current.y - start.y;
@@ -140,10 +136,28 @@ export default function Board() {
       handlePanMouseDown(e);
       return;
     }
+    if (String(activeTool) === "select") {
+      const x = e.clientX - pan.x;
+      const y = e.clientY - pan.y;
+      // iterate top-down to select topmost
+      let found: number | null = null;
+      for (let i = existingShapes.length - 1; i >= 0; i--) {
+        if (isPointInShape(x, y, existingShapes[i])) {
+          found = i;
+          break;
+        }
+      }
+      setSelectedIndex(found);
+      dragInfo.current =
+        found !== null
+          ? { index: found, lastX: e.clientX, lastY: e.clientY }
+          : null;
+      return;
+    }
     if (String(activeTool) === "eraser") {
       // Find and remove the topmost shape under the cursor
-      const x = e.clientX;
-      const y = e.clientY;
+      const x = e.clientX - pan.x;
+      const y = e.clientY - pan.y;
       for (let i = existingShapes.length - 1; i >= 0; i--) {
         const shape = existingShapes[i];
         if (isPointInShape(x, y, shape)) {
@@ -168,9 +182,26 @@ export default function Board() {
     }
   };
 
+  const dragInfo = useRef<null | {
+    index: number;
+    lastX: number;
+    lastY: number;
+  }>(null);
+
   const handleMouseMove: React.MouseEventHandler<HTMLCanvasElement> = (e) => {
     if (String(activeTool) === "hand") {
       handlePanMouseMove(e);
+      return;
+    }
+    if (String(activeTool) === "select" && dragInfo.current) {
+      const { index, lastX, lastY } = dragInfo.current;
+      const x = e.clientX;
+      const y = e.clientY;
+      const dx = x - lastX;
+      const dy = y - lastY;
+      moveShape(index, dx, dy);
+      dragInfo.current.lastX = x;
+      dragInfo.current.lastY = y;
       return;
     }
     if (!isDrawing || !start) return;
@@ -183,6 +214,10 @@ export default function Board() {
   const handleMouseUp: React.MouseEventHandler<HTMLCanvasElement> = (e) => {
     if (String(activeTool) === "hand") {
       handlePanMouseUp();
+      return;
+    }
+    if (String(activeTool) === "select") {
+      dragInfo.current = null;
       return;
     }
     if (!isDrawing || !start) return;
@@ -250,11 +285,22 @@ export default function Board() {
       link.click();
       document.body.removeChild(link);
     }
+    function handleKey(e: KeyboardEvent) {
+      if (
+        (e.key === "Delete" || e.key === "Backspace") &&
+        selectedIndex !== null
+      ) {
+        removeShape(selectedIndex);
+        setSelectedIndex(null);
+      }
+    }
     window.addEventListener("download-canvas", handleDownload);
+    window.addEventListener("keydown", handleKey);
     return () => {
       window.removeEventListener("download-canvas", handleDownload);
+      window.removeEventListener("keydown", handleKey);
     };
-  }, []);
+  }, [selectedIndex, removeShape, setSelectedIndex]);
 
   return (
     <div>
@@ -266,6 +312,22 @@ export default function Board() {
         onMouseLeave={handlePanMouseUp}
         style={{ display: "block", background: "black" }}
       ></canvas>
+      {selectedIndex !== null && (
+        <div
+          style={{
+            position: "fixed",
+            top: 8,
+            right: 8,
+            background: "rgba(40,40,40,0.8)",
+            color: "white",
+            padding: "4px 8px",
+            borderRadius: 4,
+            fontSize: 12,
+          }}
+        >
+          Selected shape #{selectedIndex + 1} – Press Delete/Backspace to remove
+        </div>
+      )}
     </div>
   );
 }
@@ -274,12 +336,13 @@ function clearCanvas(
   existingShapes: Shape[],
   canvas: HTMLCanvasElement,
   ctx: CanvasRenderingContext2D,
-  pan: { x: number; y: number } = { x: 0, y: 0 }
+  pan: { x: number; y: number } = { x: 0, y: 0 },
+  selectedIndex: number | null = null
 ) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = "rgba(0, 0, 0)";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  existingShapes.map((shape) => {
+  existingShapes.map((shape, i) => {
     if (shape.type === "rectangle") {
       ctx.strokeStyle = "rgba(255, 255, 255)";
       ctx.strokeRect(
@@ -288,6 +351,15 @@ function clearCanvas(
         shape.width,
         shape.height
       );
+      if (i === selectedIndex) {
+        ctx.strokeStyle = "rgba(0, 153, 255)";
+        ctx.strokeRect(
+          shape.startX + pan.x - 4,
+          shape.startY + pan.y - 4,
+          shape.width + 8,
+          shape.height + 8
+        );
+      }
     } else if (shape.type === "ellipse") {
       ctx.strokeStyle = "rgba(255, 255, 255)";
       ctx.beginPath();
@@ -302,6 +374,15 @@ function clearCanvas(
       );
       ctx.stroke();
       ctx.closePath();
+      if (i === selectedIndex) {
+        ctx.strokeStyle = "rgba(0, 153, 255)";
+        ctx.strokeRect(
+          shape.centerX + pan.x - Math.abs(shape.width) / 2 - 4,
+          shape.centerY + pan.y - Math.abs(shape.height) / 2 - 4,
+          Math.abs(shape.width) + 8,
+          Math.abs(shape.height) + 8
+        );
+      }
     } else if (shape.type === "line") {
       ctx.strokeStyle = "rgba(255, 255, 255)";
       ctx.beginPath();
@@ -309,6 +390,14 @@ function clearCanvas(
       ctx.lineTo(shape.endX + pan.x, shape.endY + pan.y);
       ctx.stroke();
       ctx.closePath();
+      if (i === selectedIndex) {
+        ctx.strokeStyle = "rgba(0, 153, 255)";
+        const minX = Math.min(shape.startX, shape.endX) + pan.x - 4;
+        const minY = Math.min(shape.startY, shape.endY) + pan.y - 4;
+        const width = Math.abs(shape.endX - shape.startX) + 8;
+        const height = Math.abs(shape.endY - shape.startY) + 8;
+        ctx.strokeRect(minX, minY, width, height);
+      }
     } else if (shape.type === "polygon") {
       ctx.strokeStyle = "rgba(255, 255, 255)";
       ctx.beginPath();
@@ -317,6 +406,16 @@ function clearCanvas(
       ctx.lineTo(shape.points[2].x + pan.x, shape.points[2].y + pan.y);
       ctx.closePath();
       ctx.stroke();
+      if (i === selectedIndex) {
+        const xs = shape.points.map((p) => p.x);
+        const ys = shape.points.map((p) => p.y);
+        const minX = Math.min(...xs) + pan.x - 4;
+        const minY = Math.min(...ys) + pan.y - 4;
+        const width = Math.max(...xs) - Math.min(...xs) + 8;
+        const height = Math.max(...ys) - Math.min(...ys) + 8;
+        ctx.strokeStyle = "rgba(0, 153, 255)";
+        ctx.strokeRect(minX, minY, width, height);
+      }
     } else if (shape.type === "draw" && shape.points.length > 1) {
       ctx.strokeStyle = "rgba(255, 255, 255)";
       ctx.beginPath();
@@ -326,10 +425,31 @@ function clearCanvas(
       }
       ctx.stroke();
       ctx.closePath();
+      if (i === selectedIndex) {
+        const xs = shape.points.map((p) => p.x);
+        const ys = shape.points.map((p) => p.y);
+        const minX = Math.min(...xs) + pan.x - 4;
+        const minY = Math.min(...ys) + pan.y - 4;
+        const width = Math.max(...xs) - Math.min(...xs) + 8;
+        const height = Math.max(...ys) - Math.min(...ys) + 8;
+        ctx.strokeStyle = "rgba(0, 153, 255)";
+        ctx.strokeRect(minX, minY, width, height);
+      }
     } else if (shape.type === "text") {
       ctx.fillStyle = "rgba(255, 255, 255)";
       ctx.font = "20px sans-serif";
       ctx.fillText(shape.text, shape.x + pan.x, shape.y + pan.y);
+      if (i === selectedIndex) {
+        const width = 10 * shape.text.length;
+        const height = 24;
+        ctx.strokeStyle = "rgba(0, 153, 255)";
+        ctx.strokeRect(
+          shape.x + pan.x - 4,
+          shape.y + pan.y - height - 4,
+          width + 8,
+          height + 8
+        );
+      }
     }
   });
 }
@@ -351,7 +471,6 @@ function isPointInShape(x: number, y: number, shape: Shape): boolean {
       ((x - cx) * (x - cx)) / (rx * rx) + ((y - cy) * (y - cy)) / (ry * ry) <= 1
     );
   } else if (shape.type === "line") {
-    // Distance from point to line segment
     const dist = pointToSegmentDistance(
       x,
       y,
@@ -362,11 +481,9 @@ function isPointInShape(x: number, y: number, shape: Shape): boolean {
     );
     return dist < 8; // threshold
   } else if (shape.type === "polygon") {
-    // Check if point is inside triangle using barycentric technique
     const [a, b, c] = shape.points;
     return pointInTriangle({ x, y }, a, b, c);
   } else if (shape.type === "draw") {
-    // Check if point is near any segment
     for (let i = 1; i < shape.points.length; i++) {
       const dist = pointToSegmentDistance(
         x,
@@ -380,8 +497,6 @@ function isPointInShape(x: number, y: number, shape: Shape): boolean {
     }
     return false;
   } else if (shape.type === "text") {
-    // Simple bounding box for text
-    // Assume 20px font, width = 10 * text.length, height = 24
     const width = 10 * shape.text.length;
     const height = 24;
     return (

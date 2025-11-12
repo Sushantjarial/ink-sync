@@ -27,6 +27,7 @@ export default function Toolbar() {
   console.log(activeTool);
 
   const tools = [
+    { id: "select", icon: <MousePointer size={20} />, tooltip: "Select (V)" },
     {
       id: "line",
       icon: <PenLine size={20} />,
@@ -121,7 +122,9 @@ export default function Toolbar() {
           </div>
         </div>
       </div>
-      {isLiveCollabOpen && <LiveCollabDialog onClose={() => setIsLiveCollabOpen(false)} />}
+      {isLiveCollabOpen && (
+        <LiveCollabDialog onClose={() => setIsLiveCollabOpen(false)} />
+      )}
     </>
   );
 }

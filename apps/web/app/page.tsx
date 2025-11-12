@@ -8,7 +8,7 @@ export default function Home() {
           <Board />
         </div>
         <div className=" z-50">
-          {" "}
+
           <Toolbar />
         </div>
       </div>

@@ -1,1 +1,1 @@
-export const JWT_SECRET= process.env.JWT_SECRET||"vihu"
+export const JWT_SECRET = "vihu";

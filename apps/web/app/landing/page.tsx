@@ -7,8 +7,7 @@ import {
   Users,
   Share2,
   Download,
-  Layers,
-  Github,
+  Layers
 } from "lucide-react";
 
 export default function LandingPage() {
@@ -211,7 +210,7 @@ export default function LandingPage() {
               </div>
               <div className="grid gap-4 group hover:bg-purple-900 p-6 rounded-lg transition-colors">
                 <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-purple-900 text-purple-400 group-hover:bg-purple-600 group-hover:text-white transition-colors">
-                  <Github className="h-6 w-6" />
+
                 </div>
                 <div className="grid gap-1">
                   <h3 className="text-xl font-bold text-white">Open Source</h3>

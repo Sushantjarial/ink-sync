@@ -1,4 +1,3 @@
-import { Rectangle } from "roughjs/bin/geometry";
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 
@@ -53,7 +52,8 @@ type activeTool =
   | "polygon"
   | "hand"
   | "eraser"
-  | "draw";
+  | "draw"
+  | "select";
 
 type Room = {
   id: number;
@@ -69,6 +69,7 @@ const BoardState = (set: any, get: any) => ({
   shapes: [] as Shape[],
   history: [] as Shape[][],
   future: [] as Shape[][],
+  selectedIndex: null as number | null,
   room: null as Room | null,
   roomToken: null as string | null,
   setRoom: (room: Room, roomToken: string) => set({ room, roomToken }),
@@ -84,7 +85,61 @@ const BoardState = (set: any, get: any) => ({
       history: [...state.history, state.shapes],
       future: [],
       shapes: state.shapes.filter((_: any, i: number) => i !== index),
+      selectedIndex:
+        state.selectedIndex === index
+          ? null
+          : state.selectedIndex !== null && state.selectedIndex > index
+            ? state.selectedIndex - 1
+            : state.selectedIndex,
     })),
+  setSelectedIndex: (index: number | null) => set({ selectedIndex: index }),
+  moveShape: (index: number, dx: number, dy: number) =>
+    set((state: any) => {
+      const shapes = state.shapes.slice();
+      const s = shapes[index];
+      if (!s) return {};
+      let moved: Shape = s as any;
+      switch (s.type) {
+        case "rectangle":
+          moved = { ...s, startX: s.startX + dx, startY: s.startY + dy };
+          break;
+        case "ellipse":
+          moved = { ...s, centerX: s.centerX + dx, centerY: s.centerY + dy };
+          break;
+        case "line":
+          moved = {
+            ...s,
+            startX: s.startX + dx,
+            startY: s.startY + dy,
+            endX: s.endX + dx,
+            endY: s.endY + dy,
+          };
+          break;
+        case "polygon":
+          moved = {
+            ...s,
+            points: s.points.map((p: { x: number; y: number }) => ({
+              x: p.x + dx,
+              y: p.y + dy,
+            })),
+          };
+          break;
+        case "draw":
+          moved = {
+            ...s,
+            points: s.points.map((p: { x: number; y: number }) => ({
+              x: p.x + dx,
+              y: p.y + dy,
+            })),
+          };
+          break;
+        case "text":
+          moved = { ...s, x: s.x + dx, y: s.y + dy };
+          break;
+      }
+      shapes[index] = moved;
+      return { shapes };
+    }),
   undo: () =>
     set((state: any) => {
       if (state.history.length === 0) return {};
@@ -94,6 +149,7 @@ const BoardState = (set: any, get: any) => ({
         future: [state.shapes, ...state.future],
         history: newHistory,
         shapes: prev,
+        selectedIndex: null,
       };
     }),
   redo: () =>
@@ -105,6 +161,7 @@ const BoardState = (set: any, get: any) => ({
         history: [...state.history, state.shapes],
         future: newFuture,
         shapes: next,
+        selectedIndex: null,
       };
     }),
 });
