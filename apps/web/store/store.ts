@@ -55,14 +55,14 @@ type activeTool =
   | "draw"
   | "select";
 
-type Room = {
-  id: number;
-  slug: string;
-  adminId: string | null;
-  ownerToken: string | null;
-  createdAt: string;
-  updatedAt: string;
-};
+// type Room = {
+//   id: number;
+//   slug: string;
+//   adminId: string | null;
+//   ownerToken: string | null;
+//   createdAt: string;
+//   updatedAt: string;
+// };
 
 const BoardState = (set: any, get: any) => ({
   activeTool: "" as activeTool,
@@ -70,16 +70,24 @@ const BoardState = (set: any, get: any) => ({
   history: [] as Shape[][],
   future: [] as Shape[][],
   selectedIndex: null as number | null,
-  room: null as Room | null,
+
   roomToken: null as string | null,
-  setRoom: (room: Room, roomToken: string) => set({ room, roomToken }),
+  userId: null as string | null,
+  userName: null as string | null,
+
+  setRoom: (roomToken: string) => set({  roomToken }),
+  setUser: (userId: string, userName: string) => set({ userId, userName }),
   setActiveTool: (toolId: string) => set({ activeTool: toolId }),
+
   setShape: (shape: Shape) =>
     set((state: any) => ({
       history: [...state.history, state.shapes],
       future: [],
       shapes: [...state.shapes, shape],
     })),
+  remoteAddShape: (shape: Shape) =>
+    set((state: any) => ({ shapes: [...state.shapes, shape] })),
+
   removeShape: (index: number) =>
     set((state: any) => ({
       history: [...state.history, state.shapes],
@@ -92,7 +100,19 @@ const BoardState = (set: any, get: any) => ({
             ? state.selectedIndex - 1
             : state.selectedIndex,
     })),
+  remoteRemoveShape: (index: number) =>
+    set((state: any) => ({
+      shapes: state.shapes.filter((_: any, i: number) => i !== index),
+      selectedIndex:
+        state.selectedIndex === index
+          ? null
+          : state.selectedIndex !== null && state.selectedIndex > index
+            ? state.selectedIndex - 1
+            : state.selectedIndex,
+    })),
+
   setSelectedIndex: (index: number | null) => set({ selectedIndex: index }),
+
   moveShape: (index: number, dx: number, dy: number) =>
     set((state: any) => {
       const shapes = state.shapes.slice();
@@ -140,6 +160,18 @@ const BoardState = (set: any, get: any) => ({
       shapes[index] = moved;
       return { shapes };
     }),
+
+  remoteMoveShape: (index: number, newShape: Shape) =>
+    set((state: any) => {
+      if (!state.shapes[index]) return {};
+      const shapes = state.shapes.slice();
+      shapes[index] = newShape;
+      return { shapes };
+    }),
+
+  replaceBoard: (shapes: Shape[]) =>
+    set({ shapes, history: [], future: [], selectedIndex: null }),
+
   undo: () =>
     set((state: any) => {
       if (state.history.length === 0) return {};
@@ -173,3 +205,50 @@ export const useBoardStore = create(
     })
   )
 );
+
+// Side-effect wrappers to emit over websocket; keep outside of state creator for clarity
+export function emitShapeAdd(shape: Shape) {
+  if (typeof window === "undefined") return;
+  const ws: WebSocket | undefined = (window as any).__ws;
+  const { roomToken, userId, userName } = useBoardStore.getState();
+  if (ws && ws.readyState === 1 && roomToken && userId && userName) {
+    ws.send(
+      JSON.stringify({ type: "shape_add", shape, roomToken, userId, userName })
+    );
+  }
+}
+
+export function emitShapeMove(index: number, shape: Shape) {
+  if (typeof window === "undefined") return;
+  const ws: WebSocket | undefined = (window as any).__ws;
+  const { roomToken, userId, userName } = useBoardStore.getState();
+  if (ws && ws.readyState === 1 && roomToken && userId && userName) {
+    ws.send(
+      JSON.stringify({
+        type: "shape_move",
+        index,
+        shape,
+        roomToken,
+        userId,
+        userName,
+      })
+    );
+  }
+}
+
+export function emitShapeRemove(index: number) {
+  if (typeof window === "undefined") return;
+  const ws: WebSocket | undefined = (window as any).__ws;
+  const { roomToken, userId, userName } = useBoardStore.getState();
+  if (ws && ws.readyState === 1 && roomToken && userId && userName) {
+    ws.send(
+      JSON.stringify({
+        type: "shape_remove",
+        index,
+        roomToken,
+        userId,
+        userName,
+      })
+    );
+  }
+}

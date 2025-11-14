@@ -18,10 +18,16 @@ import {
   Users,
 } from "lucide-react";
 import { useBoardStore } from "@/store/store";
-import LiveCollabDialog from "./LiveCollabDialog";
+import liveCollaboration from "../../functions/liveCollaboration";
+import { useRouter } from "next/navigation";
 
 export default function Toolbar() {
-  const [isLiveCollabOpen, setIsLiveCollabOpen] = useState(false);
+     const setRoom = useBoardStore((state) => state.setRoom);
+  const setUser = useBoardStore((state) => (state as any).setUser as (id: string, name: string) => void);
+  const userId = useBoardStore((state) => (state as any).userId as string | null);
+  const userName = useBoardStore((state) => (state as any).userName as string | null);
+
+  const router = useRouter();
   const activeTool = useBoardStore((state) => state.activeTool);
   const setActiveTool = useBoardStore((state) => state.setActiveTool);
   console.log(activeTool);
@@ -70,7 +76,7 @@ export default function Toolbar() {
       return;
     }
     if (actionId === "live") {
-      setIsLiveCollabOpen(true);
+      liveCollaboration(setRoom ,setUser,userId,userName, router);
       return;
     }
     console.log(`Action clicked: ${actionId}`);
@@ -122,9 +128,7 @@ export default function Toolbar() {
           </div>
         </div>
       </div>
-      {isLiveCollabOpen && (
-        <LiveCollabDialog onClose={() => setIsLiveCollabOpen(false)} />
-      )}
+   
     </>
   );
 }

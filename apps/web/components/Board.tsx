@@ -1,5 +1,10 @@
 "use client";
-import { useBoardStore } from "@/store/store";
+import {
+  useBoardStore,
+  emitShapeAdd,
+  emitShapeMove,
+  emitShapeRemove,
+} from "@/store/store";
 import { Shape } from "@/store/store";
 
 import { useEffect, useRef, useState } from "react";
@@ -200,6 +205,10 @@ export default function Board() {
       const dx = x - lastX;
       const dy = y - lastY;
       moveShape(index, dx, dy);
+      const updated = useBoardStore.getState().shapes[index];
+      if (updated) {
+        emitShapeMove(index, updated);
+      }
       dragInfo.current.lastX = x;
       dragInfo.current.lastY = y;
       return;
@@ -267,6 +276,7 @@ export default function Board() {
     }
     if (shape) {
       addShape(shape);
+      emitShapeAdd(shape);
     }
     setStart(null);
     setCurrent(null);
@@ -291,6 +301,7 @@ export default function Board() {
         selectedIndex !== null
       ) {
         removeShape(selectedIndex);
+        emitShapeRemove(selectedIndex);
         setSelectedIndex(null);
       }
     }
