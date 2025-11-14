@@ -2,16 +2,21 @@ import { WebSocketServer, WebSocket } from "ws";
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "@repo/common-backend/config";
 
-import { prisma } from "@repo/db/client";
+// import { prisma } from "@repo/db/client"; // Not needed for live shape sync right now
 const wss = new WebSocketServer({ port: 8080 });
-type user = {
+type User = {
   socket: WebSocket;
   rooms: string[];
   userName: string;
   userId: string;
 };
-const users: Map<string, user> = new Map();
+const users: Map<string, User> = new Map();
 
+type Shape = any; // Trust clients for now; validate as needed
+type RoomState = {
+  shapes: Shape[];
+};
+const roomStates: Map<string, RoomState> = new Map();
 
 function verifyRoom(roomToken: string): string | null {
   console.log(roomToken);
@@ -34,102 +39,109 @@ function verifyRoom(roomToken: string): string | null {
   }
 }
 
-wss.on("connection", (socket, request) => {
-
-  socket.on("message", async (message) => {
-    const { type, userId, userName, roomToken ,data} = JSON.parse(
-      message.toString()
-    );
-
-    console.log("message", message.toString());
-    const roomId = verifyRoom(roomToken);
-    console.log("roomId", roomId);
-    if (!roomId) {
+wss.on("connection", (socket) => {
+  socket.on("message", async (raw) => {
+    let parsed: any;
+    try {
+      parsed = JSON.parse(raw.toString());
+    } catch (e) {
       socket.send(
-        JSON.stringify({
-          type: "error",
-          message: "invalid room token",
-        })
+        JSON.stringify({ type: "error", message: "invalid json payload" })
       );
       return;
     }
+    const { type, userId, userName, roomToken } = parsed;
+    const roomId = verifyRoom(roomToken);
+    if (!roomId) {
+      socket.send(
+        JSON.stringify({ type: "error", message: "invalid room token" })
+      );
+      return;
+    }
+
+    // Ensure room state exists
+    if (!roomStates.has(roomId)) {
+      roomStates.set(roomId, { shapes: [] });
+    }
+
     if (type === "join") {
-      const user = users.get(userId);
-     
       users.set(userId, {
         socket,
         userId,
         rooms: [roomId],
         userName,
       });
-      console.log("users", users);
-      users.forEach((user) => {
-        if (user.rooms.includes(roomId) && user.userId !== userId) {
-          user.socket.send(
-            JSON.stringify({
-              type: "joined",
-              message: userName + " have joined the room",
-              userId,
-              roomId,
-            })
-          );
-        }
+      // Send current board state to joining user
+      const state = roomStates.get(roomId)!;
+      socket.send(
+        JSON.stringify({
+          type: "board_state",
+          roomId,
+          shapes: state.shapes,
+        })
+      );
+      // Notify others
+      broadcast(roomId, userId, {
+        type: "joined",
+        userId,
+        userName,
+        roomId,
       });
+      return;
     }
 
-    if (type === "message") {
-
-      console.log(data);
-      const user = users.get(userId);
-      if (!user) {
-        console.log("User not found");
-        socket.send(
-          JSON.stringify({
-            type: "error",
-            message: "user not found",
-          })
-        );
-        return;
-      } else {
-        // const message = await prisma.message.create({
-        //   data: {
-        //     roomId: Number(roomId),
-        //     content: data,
-        //     senderId: userId,
-        //   },
-        // });
-        console.log("Broadcasting message to room:", roomId);
-        
-        users.forEach((user) => {
-          if (user.rooms.includes(roomId) && user.userId !== userId) {
-            console.log("Sending message to user:", user.userId);
-            user.socket.send(
-              JSON.stringify({
-                data,
-                type: "message",
-                userName,
-                userId,
-                roomId,
-              })
-            );
-          }
-          
-        });
+    if (type === "shape_add") {
+      const { shape } = parsed;
+      const state = roomStates.get(roomId)!;
+      state.shapes.push(shape);
+      broadcast(roomId, userId, { type: "shape_add", shape });
+      return;
+    }
+    if (type === "shape_move") {
+      const { index, shape } = parsed;
+      const state = roomStates.get(roomId)!;
+      if (state.shapes[index]) {
+        state.shapes[index] = shape;
+        broadcast(roomId, userId, { type: "shape_move", index, shape });
       }
+      return;
+    }
+    if (type === "shape_remove") {
+      const { index } = parsed;
+      const state = roomStates.get(roomId)!;
+      if (state.shapes[index]) {
+        state.shapes.splice(index, 1);
+        broadcast(roomId, userId, { type: "shape_remove", index });
+      }
+      return;
+    }
+    if (type === "board_state_request") {
+      const state = roomStates.get(roomId)!;
+      socket.send(
+        JSON.stringify({ type: "board_state", shapes: state.shapes, roomId })
+      );
+      return;
     }
     if (type === "leave") {
-      const user = users.get(userId);
-      if (!user) {
-        socket.send(
-          JSON.stringify({
-            type: "error",
-            message: "user not found",
-          })
-        );
-        return;
-      } else {
-        users.delete(userId);
+      users.delete(userId);
+      broadcast(roomId, userId, { type: "left", userId, roomId });
+      return;
+    }
+    // Unknown type
+    socket.send(
+      JSON.stringify({ type: "error", message: `unknown type: ${type}` })
+    );
+  });
+});
+
+function broadcast(roomId: string, exceptUserId: string, payload: any) {
+  users.forEach((u) => {
+    if (u.rooms.includes(roomId) && u.userId !== exceptUserId) {
+      try {
+        u.socket.send(JSON.stringify(payload));
+      } catch (e) {
+        console.error("broadcast failed", e);
       }
     }
   });
-});
+}
