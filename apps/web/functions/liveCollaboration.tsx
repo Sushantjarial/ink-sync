@@ -1,7 +1,7 @@
 "use client";
 
 import { useBoardStore } from "@/store/store";
-import { redirect } from "next/navigation";
+
 
 const API_BASE =
   (typeof process !== "undefined" && process.env.NEXT_PUBLIC_API_URL) ||

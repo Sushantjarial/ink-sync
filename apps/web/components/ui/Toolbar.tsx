@@ -98,6 +98,7 @@ export default function Toolbar() {
       return;
     }
     if (actionId === "live") {
+      window.alert("Ws server is not hosted currently. Please clone the repo and run locally.")
       const token = await liveCollaboration(setRoom, setUser, userId, userName);
       if (token) {
         const link = `${window.location.origin}/room/${token}`;

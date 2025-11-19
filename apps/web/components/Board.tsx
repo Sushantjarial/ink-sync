@@ -20,8 +20,7 @@ export default function Board() {
   const addShape = useBoardStore((state) => state.setShape);
   const existingShapes: Shape[] = useBoardStore((state) => state.shapes);
   const removeShape = useBoardStore((state) => state.removeShape);
-  const undo = useBoardStore((state) => state.undo);
-  const redo = useBoardStore((state) => state.redo);
+
   const selectedIndex = useBoardStore((state) => state.selectedIndex);
   const setSelectedIndex = useBoardStore((state) => state.setSelectedIndex);
   const moveShape = useBoardStore((state) => state.moveShape);
