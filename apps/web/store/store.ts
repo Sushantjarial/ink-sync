@@ -55,14 +55,7 @@ type activeTool =
   | "draw"
   | "select";
 
-// type Room = {
-//   id: number;
-//   slug: string;
-//   adminId: string | null;
-//   ownerToken: string | null;
-//   createdAt: string;
-//   updatedAt: string;
-// };
+
 
 const BoardState = (set: any, get: any) => ({
   activeTool: "" as activeTool,
@@ -74,8 +67,8 @@ const BoardState = (set: any, get: any) => ({
   roomToken: null as string | null,
   userId: null as string | null,
   userName: null as string | null,
-
-  setRoom: (roomToken: string) => set({  roomToken }),
+  setIsLive: (isLive: boolean) => set({ isLive }),
+  setRoom: (roomToken: string | null) => set({ roomToken }),
   setUser: (userId: string, userName: string) => set({ userId, userName }),
   setActiveTool: (toolId: string) => set({ activeTool: toolId }),
 

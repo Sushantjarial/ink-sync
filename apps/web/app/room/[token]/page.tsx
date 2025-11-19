@@ -91,15 +91,13 @@ export default function Draw() {
   }, [roomToken]);
 
   return (
-    <div>
-      <div>
-        <div className="absolute">
-          <Board />
-        </div>
-        <div className=" z-50">
-          <Toolbar />
-        </div>
-      </div>
+    <div className="relative w-full h-screen overflow-hidden">
+    <div className="absolute top-4 flex justify-center inset-x-0 ">
+      <Toolbar /> 
     </div>
+    <div className="absolute inset-0">
+      <Board />
+    </div>
+</div>
   );
 }

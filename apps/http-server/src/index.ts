@@ -3,9 +3,11 @@ import { JWT_SECRET } from "@repo/common-backend/config";
 import { prisma } from "@repo/db/client";
 import { createRoomSchema } from "@repo/common/types";
 import jwt from "jsonwebtoken";
+import cors from "cors"
 
 const app = express();
 app.use(express.json());
+app.use(cors())
 
 // app.post("/signup",async(req,res)=>{
 
@@ -189,3 +191,5 @@ app.get("/rooms/:slug", async (req, res) => {
 });
 
 app.listen(4000);
+
+

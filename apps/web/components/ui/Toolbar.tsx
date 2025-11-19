@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   MousePointer,
   Square,
@@ -16,18 +16,36 @@ import {
   Download,
   PenLine,
   Users,
+  OctagonPause,
 } from "lucide-react";
 import { useBoardStore } from "@/store/store";
 import liveCollaboration from "../../functions/liveCollaboration";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+import ShareLinkDialog from "./ShareLinkDialog";
 
 export default function Toolbar() {
-     const setRoom = useBoardStore((state) => state.setRoom);
-  const setUser = useBoardStore((state) => (state as any).setUser as (id: string, name: string) => void);
-  const userId = useBoardStore((state) => (state as any).userId as string | null);
-  const userName = useBoardStore((state) => (state as any).userName as string | null);
-
+  const setRoom = useBoardStore((state) => state.setRoom);
+  const setUser = useBoardStore(
+    (state) => (state as any).setUser as (id: string, name: string) => void
+  );
+  const userId = useBoardStore(
+    (state) => (state as any).userId as string | null
+  );
+  const userName = useBoardStore(
+    (state) => (state as any).userName as string | null
+  );
   const router = useRouter();
+  const pathname = usePathname();
+  const roomToken = useBoardStore((state) => state.roomToken);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [generatedLink, setGeneratedLink] = useState("");
+
+  useEffect(() => {
+    if (roomToken && !pathname.includes("/room/")) {
+      setRoom(null);
+    }
+  }, [pathname, roomToken, setRoom]);
+
   const activeTool = useBoardStore((state) => state.activeTool);
   const setActiveTool = useBoardStore((state) => state.setActiveTool);
   console.log(activeTool);
@@ -52,7 +70,11 @@ export default function Toolbar() {
     { id: "undo", icon: <Undo size={20} />, tooltip: "Undo (Ctrl+Z)" },
     { id: "redo", icon: <Redo size={20} />, tooltip: "Redo (Ctrl+Y)" },
     { id: "save", icon: <Download size={20} />, tooltip: "Save (Ctrl+S)" },
-    { id: "live", icon: <Users size={20} />, tooltip: "Live Collaboration " },
+    {
+      id: roomToken ? "end-live" : "live",
+      icon: roomToken ? <OctagonPause size={20} /> : <Users size={20} />,
+      tooltip: roomToken ? "End Live" : "Live Collaboration",
+    },
   ];
 
   const undo = useBoardStore((state) => state.undo);
@@ -62,7 +84,7 @@ export default function Toolbar() {
     setActiveTool(toolId);
   };
 
-  const handleActionClick = (actionId: any) => {
+  const handleActionClick = async (actionId: any) => {
     if (actionId === "undo") {
       undo();
       return;
@@ -76,17 +98,41 @@ export default function Toolbar() {
       return;
     }
     if (actionId === "live") {
-      liveCollaboration(setRoom ,setUser,userId,userName, router);
+      const token = await liveCollaboration(setRoom, setUser, userId, userName);
+      if (token) {
+        const link = `${window.location.origin}/room/${token}`;
+        setGeneratedLink(link);
+        setShareDialogOpen(true);
+      }
+      return;
+    }
+    if (actionId === "end-live") {
+      setRoom(null);
+      router.push("/");
       return;
     }
     console.log(`Action clicked: ${actionId}`);
     // Implementation for actions would go here
   };
 
+  const handleJoinRoom = () => {
+    setShareDialogOpen(false);
+    if (generatedLink) {
+      const url = new URL(generatedLink);
+      router.push(url.pathname);
+    }
+  };
+
   return (
     <>
-      <div className="flex items-center justify-center w-full h-16 z-50  bg-black">
-        <div className="flex flex-row items-center bg-[#23232A] rounded-lg shadow-md p-1 max-w-3xl">
+      <ShareLinkDialog
+        isOpen={shareDialogOpen}
+        onClose={() => setShareDialogOpen(false)}
+        link={generatedLink}
+        onJoin={handleJoinRoom}
+      />
+      <div className="flex items-center justify-center   z-50 ">
+        <div className="flex flex-row items-center bg-[#23232A] rounded-lg shadow-md p-1 max-w-3xl  ">
           <div className="flex flex-row space-x-1 mr-4">
             {tools.map((tool) => (
               <button
@@ -128,7 +174,6 @@ export default function Toolbar() {
           </div>
         </div>
       </div>
-   
     </>
   );
 }
