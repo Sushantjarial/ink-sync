@@ -48,19 +48,41 @@ export default function Toolbar() {
 
   const activeTool = useBoardStore((state) => state.activeTool);
   const setActiveTool = useBoardStore((state) => state.setActiveTool);
+
+  useEffect(() => {
+    const shortcuts: Record<string, string> = {
+      v: "select",
+      l: "line",
+      r: "rectangle",
+      e: "ellipse",
+      t: "polygon",
+      p: "draw",
+      a: "text",
+      h: "hand",
+    };
+    const handleKey = (ev: KeyboardEvent) => {
+      if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
+      const tag = (ev.target as HTMLElement).tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA") return;
+      const tool = shortcuts[ev.key.toLowerCase()];
+      if (tool) setActiveTool(tool);
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [setActiveTool]);
   console.log(activeTool);
 
   const tools = [
     { id: "select", icon: <MousePointer size={20} />, tooltip: "Select (V)" },
+    { id: "draw", icon: <PenTool size={20} />, tooltip: "Pencil (P)" },
+    { id: "rectangle", icon: <Square size={20} />, tooltip: "Rectangle (R)" },
+    { id: "ellipse", icon: <Circle size={20} />, tooltip: "Ellipse (E)" },
+    { id: "polygon", icon: <Triangle size={20} />, tooltip: "Triangle (T)" },
     {
       id: "line",
       icon: <PenLine size={20} />,
       tooltip: "Line (L)",
     },
-    { id: "rectangle", icon: <Square size={20} />, tooltip: "Rectangle (R)" },
-    { id: "ellipse", icon: <Circle size={20} />, tooltip: "Ellipse (E)" },
-    { id: "polygon", icon: <Triangle size={20} />, tooltip: "Triangle (T)" },
-    { id: "draw", icon: <PenTool size={20} />, tooltip: "Pencil (P)" },
     { id: "text", icon: <Type size={20} />, tooltip: "Text (A)" },
     { id: "hand", icon: <Hand size={20} />, tooltip: "Hand Tool (H)" },
     { id: "eraser", icon: <Trash2 size={20} />, tooltip: "Eraser" },
@@ -98,7 +120,7 @@ export default function Toolbar() {
       return;
     }
     if (actionId === "live") {
-      window.alert("Ws server is not hosted currently. Please clone the repo and run locally.")
+    
       const token = await liveCollaboration(setRoom, setUser, userId, userName);
       if (token) {
         const link = `${window.location.origin}/room/${token}`;

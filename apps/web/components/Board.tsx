@@ -7,7 +7,7 @@ import {
 } from "@/store/store";
 import { Shape } from "@/store/store";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 
 export default function Board() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -28,9 +28,55 @@ export default function Board() {
   // Pan state for hand tool
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
-  const [panStart, setPanStart] = useState<{ x: number; y: number } | null>(
-    null
-  );
+  const [panStart, setPanStart] = useState<{ x: number; y: number } | null>(null);
+
+  // Zoom state (1 = 100%)
+  const [zoom, setZoom] = useState(1);
+
+  // Inline text editing state
+  const [activeText, setActiveText] = useState<{
+    worldX: number;
+    worldY: number;
+    value: string;
+  } | null>(null);
+  const activeTextRef = useRef(activeText);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const isCommittingRef = useRef(false);
+
+  // Keep ref in sync so commitText always reads latest value
+  useEffect(() => {
+    activeTextRef.current = activeText;
+  }, [activeText]);
+
+  // Focus textarea using setTimeout to escape the mousedown event cycle
+  const textareaActive = activeText !== null;
+  useEffect(() => {
+    if (!textareaActive) return;
+    const id = setTimeout(() => {
+      textareaRef.current?.focus();
+    }, 0);
+    return () => clearTimeout(id);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [textareaActive]);
+
+  const commitText = useCallback(() => {
+    if (isCommittingRef.current) return;
+    isCommittingRef.current = true;
+    const current = activeTextRef.current;
+    if (current && current.value.trim() !== "") {
+      const shape = { type: "text" as const, text: current.value, x: current.worldX, y: current.worldY };
+      addShape(shape);
+      emitShapeAdd(shape);
+    }
+    setActiveText(null);
+    setTimeout(() => { isCommittingRef.current = false; }, 0);
+  }, [addShape]);
+
+  // Convert screen coordinates to world (canvas) coordinates
+  const toWorld = (sx: number, sy: number) => ({
+    x: (sx - pan.x) / zoom,
+    y: (sy - pan.y) / zoom,
+  });
 
   // Set canvas size on mount
   useEffect(() => {
@@ -47,8 +93,8 @@ export default function Board() {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    clearCanvas(existingShapes, canvas, ctx, pan, selectedIndex);
-  }, [existingShapes, pan, selectedIndex]);
+    clearCanvas(existingShapes, canvas, ctx, pan, zoom, selectedIndex);
+  }, [existingShapes, pan, zoom, selectedIndex]);
 
   // Draw preview shape while drawing
   useEffect(() => {
@@ -56,19 +102,21 @@ export default function Board() {
     if (!canvas || (!isDrawing && !isPanning) || !start || !current) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    clearCanvas(existingShapes, canvas, ctx, pan, selectedIndex);
+    clearCanvas(existingShapes, canvas, ctx, pan, zoom, selectedIndex);
+    ctx.save();
+    ctx.translate(pan.x, pan.y);
+    ctx.scale(zoom, zoom);
+    ctx.lineWidth = 2 / zoom;
     ctx.strokeStyle = "rgba(255, 255, 255)";
     const width = current.x - start.x;
     const height = current.y - start.y;
-    const offsetX = pan.x;
-    const offsetY = pan.y;
     if (activeTool === "rectangle") {
-      ctx.strokeRect(start.x + offsetX, start.y + offsetY, width, height);
+      ctx.strokeRect(start.x, start.y, width, height);
     } else if (activeTool === "ellipse") {
       ctx.beginPath();
       ctx.ellipse(
-        start.x + width / 2 + offsetX,
-        start.y + height / 2 + offsetY,
+        start.x + width / 2,
+        start.y + height / 2,
         Math.abs(width / 2),
         Math.abs(height / 2),
         0,
@@ -79,18 +127,14 @@ export default function Board() {
       ctx.closePath();
     } else if (activeTool === "line") {
       ctx.beginPath();
-      ctx.moveTo(start.x + offsetX, start.y + offsetY);
-      ctx.lineTo(current.x + offsetX, current.y + offsetY);
+      ctx.moveTo(start.x, start.y);
+      ctx.lineTo(current.x, current.y);
       ctx.stroke();
       ctx.closePath();
     } else if (activeTool === "polygon") {
-      // Draw triangle preview
-      const p1 = { x: start.x + offsetX, y: current.y + offsetY };
-      const p2 = {
-        x: (start.x + current.x) / 2 + offsetX,
-        y: start.y + offsetY,
-      };
-      const p3 = { x: current.x + offsetX, y: current.y + offsetY };
+      const p1 = { x: start.x, y: current.y };
+      const p2 = { x: (start.x + current.x) / 2, y: start.y };
+      const p3 = { x: current.x, y: current.y };
       ctx.beginPath();
       ctx.moveTo(p1.x, p1.y);
       ctx.lineTo(p2.x, p2.y);
@@ -99,13 +143,14 @@ export default function Board() {
       ctx.stroke();
     } else if (String(activeTool) === "draw" && drawPoints.length > 1) {
       ctx.beginPath();
-      ctx.moveTo(drawPoints[0].x + offsetX, drawPoints[0].y + offsetY);
+      ctx.moveTo(drawPoints[0].x, drawPoints[0].y);
       for (let i = 1; i < drawPoints.length; i++) {
-        ctx.lineTo(drawPoints[i].x + offsetX, drawPoints[i].y + offsetY);
+        ctx.lineTo(drawPoints[i].x, drawPoints[i].y);
       }
       ctx.stroke();
       ctx.closePath();
     }
+    ctx.restore();
   }, [
     isDrawing,
     isPanning,
@@ -115,6 +160,7 @@ export default function Board() {
     existingShapes,
     drawPoints,
     pan,
+    zoom,
   ]);
 
   // Pan logic for hand tool
@@ -135,18 +181,35 @@ export default function Board() {
     setPanStart(null);
   };
 
+  // Zoom centered on a screen point
+  const applyZoom = (factor: number, originX: number, originY: number) => {
+    setZoom((prevZoom) => {
+      const newZoom = Math.max(0.1, Math.min(5, prevZoom * factor));
+      setPan((prevPan) => ({
+        x: originX - (originX - prevPan.x) * (newZoom / prevZoom),
+        y: originY - (originY - prevPan.y) * (newZoom / prevZoom),
+      }));
+      return newZoom;
+    });
+  };
+
+  const handleWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
+    if (!e.ctrlKey) return;
+    e.preventDefault();
+    const factor = e.deltaY < 0 ? 1.1 : 0.9;
+    applyZoom(factor, e.clientX, e.clientY);
+  };
+
   const handleMouseDown: React.MouseEventHandler<HTMLCanvasElement> = (e) => {
     if (String(activeTool) === "hand") {
       handlePanMouseDown(e);
       return;
     }
+    const wp = toWorld(e.clientX, e.clientY);
     if (String(activeTool) === "select") {
-      const x = e.clientX - pan.x;
-      const y = e.clientY - pan.y;
-      // iterate top-down to select topmost
       let found: number | null = null;
       for (let i = existingShapes.length - 1; i >= 0; i--) {
-        if (isPointInShape(x, y, existingShapes[i])) {
+        if (isPointInShape(wp.x, wp.y, existingShapes[i])) {
           found = i;
           break;
         }
@@ -159,12 +222,8 @@ export default function Board() {
       return;
     }
     if (String(activeTool) === "eraser") {
-      // Find and remove the topmost shape under the cursor
-      const x = e.clientX - pan.x;
-      const y = e.clientY - pan.y;
       for (let i = existingShapes.length - 1; i >= 0; i--) {
-        const shape = existingShapes[i];
-        if (isPointInShape(x, y, shape)) {
+        if (isPointInShape(wp.x, wp.y, existingShapes[i])) {
           removeShape(i);
           break;
         }
@@ -172,17 +231,14 @@ export default function Board() {
       return;
     }
     if (String(activeTool) === "text") {
-      const text = window.prompt("Enter text:");
-      if (text && text.trim() !== "") {
-        addShape({ type: "text", text, x: e.clientX, y: e.clientY });
-      }
+      setActiveText({ worldX: wp.x, worldY: wp.y, value: "" });
       return;
     }
     setIsDrawing(true);
-    setStart({ x: e.clientX, y: e.clientY });
-    setCurrent({ x: e.clientX, y: e.clientY });
+    setStart(wp);
+    setCurrent(wp);
     if (String(activeTool) === "draw") {
-      setDrawPoints([{ x: e.clientX, y: e.clientY }]);
+      setDrawPoints([wp]);
     }
   };
 
@@ -199,23 +255,23 @@ export default function Board() {
     }
     if (String(activeTool) === "select" && dragInfo.current) {
       const { index, lastX, lastY } = dragInfo.current;
-      const x = e.clientX;
-      const y = e.clientY;
-      const dx = x - lastX;
-      const dy = y - lastY;
+      // Divide screen delta by zoom to get world delta
+      const dx = (e.clientX - lastX) / zoom;
+      const dy = (e.clientY - lastY) / zoom;
       moveShape(index, dx, dy);
       const updated = useBoardStore.getState().shapes[index];
       if (updated) {
         emitShapeMove(index, updated);
       }
-      dragInfo.current.lastX = x;
-      dragInfo.current.lastY = y;
+      dragInfo.current.lastX = e.clientX;
+      dragInfo.current.lastY = e.clientY;
       return;
     }
     if (!isDrawing || !start) return;
-    setCurrent({ x: e.clientX, y: e.clientY });
+    const wp = toWorld(e.clientX, e.clientY);
+    setCurrent(wp);
     if (String(activeTool) === "draw") {
-      setDrawPoints((prev) => [...prev, { x: e.clientX, y: e.clientY }]);
+      setDrawPoints((prev) => [...prev, wp]);
     }
   };
 
@@ -230,7 +286,7 @@ export default function Board() {
     }
     if (!isDrawing || !start) return;
     setIsDrawing(false);
-    const end = { x: e.clientX, y: e.clientY };
+    const end = toWorld(e.clientX, e.clientY);
     const width = end.x - start.x;
     const height = end.y - start.y;
     let shape: Shape | null = null;
@@ -259,7 +315,6 @@ export default function Board() {
         endY: end.y,
       };
     } else if (activeTool === "polygon") {
-      // Calculate triangle points
       const p1 = { x: start.x, y: end.y };
       const p2 = { x: (start.x + end.x) / 2, y: start.y };
       const p3 = { x: end.x, y: end.y };
@@ -295,6 +350,7 @@ export default function Board() {
       document.body.removeChild(link);
     }
     function handleKey(e: KeyboardEvent) {
+      if (document.activeElement === textareaRef.current) return;
       if (
         (e.key === "Delete" || e.key === "Backspace") &&
         selectedIndex !== null
@@ -320,8 +376,59 @@ export default function Board() {
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handlePanMouseUp}
+        onWheel={handleWheel}
         style={{ display: "block", background: "black" }}
       ></canvas>
+      {activeText !== null && (
+        <textarea
+          ref={textareaRef}
+          value={activeText.value}
+          onChange={(e) => {
+            const el = e.target;
+            el.style.height = "auto";
+            el.style.width = "auto";
+            el.style.height = el.scrollHeight + "px";
+            el.style.width = Math.max(el.scrollWidth, Math.round(120 * zoom)) + "px";
+            setActiveText((prev) =>
+              prev ? { ...prev, value: e.target.value } : null
+            );
+          }}
+          onKeyDown={(e) => {
+            e.stopPropagation();
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              commitText();
+            }
+            if (e.key === "Escape") {
+              setActiveText(null);
+            }
+          }}
+          onBlur={commitText}
+          rows={1}
+          style={{
+            position: "fixed",
+            left: activeText.worldX * zoom + pan.x,
+            top: activeText.worldY * zoom + pan.y - 24 * zoom,
+            fontSize: `${20 * zoom}px`,
+            fontFamily: "sans-serif",
+            color: "#ffffff",
+            background: "transparent",
+            border: "none",
+            outline: "none",
+            borderRadius: 0,
+            resize: "none",
+            padding: `2px 4px`,
+            margin: 0,
+            lineHeight: 1.3,
+            zIndex: 200,
+            minWidth: `${Math.round(120 * zoom)}px`,
+            overflow: "hidden",
+            caretColor: "#ffffff",
+            whiteSpace: "pre",
+            boxSizing: "border-box",
+          }}
+        />
+      )}
       {selectedIndex !== null && (
         <div
           style={{
@@ -338,6 +445,61 @@ export default function Board() {
           Selected shape #{selectedIndex + 1} – Press Delete/Backspace to remove
         </div>
       )}
+      <div
+        style={{
+          position: "fixed",
+          bottom: 24,
+          left: 24,
+          display: "flex",
+          alignItems: "center",
+          gap: 4,
+          background: "#23232A",
+          borderRadius: 8,
+          padding: "4px 8px",
+          color: "white",
+          fontSize: 13,
+          zIndex: 50,
+          userSelect: "none",
+        }}
+      >
+        <button
+          onClick={() =>
+            applyZoom(0.9, window.innerWidth / 2, window.innerHeight / 2)
+          }
+          style={{
+            background: "none",
+            border: "none",
+            color: "white",
+            fontSize: 18,
+            cursor: "pointer",
+            lineHeight: 1,
+            padding: "0 4px",
+          }}
+          aria-label="Zoom out"
+        >
+          −
+        </button>
+        <span style={{ minWidth: 44, textAlign: "center" }}>
+          {Math.round(zoom * 100)}%
+        </span>
+        <button
+          onClick={() =>
+            applyZoom(1.1, window.innerWidth / 2, window.innerHeight / 2)
+          }
+          style={{
+            background: "none",
+            border: "none",
+            color: "white",
+            fontSize: 18,
+            cursor: "pointer",
+            lineHeight: 1,
+            padding: "0 4px",
+          }}
+          aria-label="Zoom in"
+        >
+          +
+        </button>
+      </div>
     </div>
   );
 }
@@ -347,25 +509,27 @@ function clearCanvas(
   canvas: HTMLCanvasElement,
   ctx: CanvasRenderingContext2D,
   pan: { x: number; y: number } = { x: 0, y: 0 },
+  zoom: number = 1,
   selectedIndex: number | null = null
 ) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = "rgba(0, 0, 0)";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  existingShapes.map((shape, i) => {
+
+  ctx.save();
+  ctx.translate(pan.x, pan.y);
+  ctx.scale(zoom, zoom);
+  ctx.lineWidth = 2 / zoom;
+
+  existingShapes.forEach((shape, i) => {
     if (shape.type === "rectangle") {
       ctx.strokeStyle = "rgba(255, 255, 255)";
-      ctx.strokeRect(
-        shape.startX + pan.x,
-        shape.startY + pan.y,
-        shape.width,
-        shape.height
-      );
+      ctx.strokeRect(shape.startX, shape.startY, shape.width, shape.height);
       if (i === selectedIndex) {
         ctx.strokeStyle = "rgba(0, 153, 255)";
         ctx.strokeRect(
-          shape.startX + pan.x - 4,
-          shape.startY + pan.y - 4,
+          shape.startX - 4,
+          shape.startY - 4,
           shape.width + 8,
           shape.height + 8
         );
@@ -374,8 +538,8 @@ function clearCanvas(
       ctx.strokeStyle = "rgba(255, 255, 255)";
       ctx.beginPath();
       ctx.ellipse(
-        shape.centerX + pan.x,
-        shape.centerY + pan.y,
+        shape.centerX,
+        shape.centerY,
         Math.abs(shape.width) / 2,
         Math.abs(shape.height) / 2,
         0,
@@ -387,8 +551,8 @@ function clearCanvas(
       if (i === selectedIndex) {
         ctx.strokeStyle = "rgba(0, 153, 255)";
         ctx.strokeRect(
-          shape.centerX + pan.x - Math.abs(shape.width) / 2 - 4,
-          shape.centerY + pan.y - Math.abs(shape.height) / 2 - 4,
+          shape.centerX - Math.abs(shape.width) / 2 - 4,
+          shape.centerY - Math.abs(shape.height) / 2 - 4,
           Math.abs(shape.width) + 8,
           Math.abs(shape.height) + 8
         );
@@ -396,14 +560,14 @@ function clearCanvas(
     } else if (shape.type === "line") {
       ctx.strokeStyle = "rgba(255, 255, 255)";
       ctx.beginPath();
-      ctx.moveTo(shape.startX + pan.x, shape.startY + pan.y);
-      ctx.lineTo(shape.endX + pan.x, shape.endY + pan.y);
+      ctx.moveTo(shape.startX, shape.startY);
+      ctx.lineTo(shape.endX, shape.endY);
       ctx.stroke();
       ctx.closePath();
       if (i === selectedIndex) {
         ctx.strokeStyle = "rgba(0, 153, 255)";
-        const minX = Math.min(shape.startX, shape.endX) + pan.x - 4;
-        const minY = Math.min(shape.startY, shape.endY) + pan.y - 4;
+        const minX = Math.min(shape.startX, shape.endX) - 4;
+        const minY = Math.min(shape.startY, shape.endY) - 4;
         const width = Math.abs(shape.endX - shape.startX) + 8;
         const height = Math.abs(shape.endY - shape.startY) + 8;
         ctx.strokeRect(minX, minY, width, height);
@@ -411,16 +575,16 @@ function clearCanvas(
     } else if (shape.type === "polygon") {
       ctx.strokeStyle = "rgba(255, 255, 255)";
       ctx.beginPath();
-      ctx.moveTo(shape.points[0].x + pan.x, shape.points[0].y + pan.y);
-      ctx.lineTo(shape.points[1].x + pan.x, shape.points[1].y + pan.y);
-      ctx.lineTo(shape.points[2].x + pan.x, shape.points[2].y + pan.y);
+      ctx.moveTo(shape.points[0].x, shape.points[0].y);
+      ctx.lineTo(shape.points[1].x, shape.points[1].y);
+      ctx.lineTo(shape.points[2].x, shape.points[2].y);
       ctx.closePath();
       ctx.stroke();
       if (i === selectedIndex) {
         const xs = shape.points.map((p) => p.x);
         const ys = shape.points.map((p) => p.y);
-        const minX = Math.min(...xs) + pan.x - 4;
-        const minY = Math.min(...ys) + pan.y - 4;
+        const minX = Math.min(...xs) - 4;
+        const minY = Math.min(...ys) - 4;
         const width = Math.max(...xs) - Math.min(...xs) + 8;
         const height = Math.max(...ys) - Math.min(...ys) + 8;
         ctx.strokeStyle = "rgba(0, 153, 255)";
@@ -429,17 +593,17 @@ function clearCanvas(
     } else if (shape.type === "draw" && shape.points.length > 1) {
       ctx.strokeStyle = "rgba(255, 255, 255)";
       ctx.beginPath();
-      ctx.moveTo(shape.points[0].x + pan.x, shape.points[0].y + pan.y);
-      for (let i = 1; i < shape.points.length; i++) {
-        ctx.lineTo(shape.points[i].x + pan.x, shape.points[i].y + pan.y);
+      ctx.moveTo(shape.points[0].x, shape.points[0].y);
+      for (let j = 1; j < shape.points.length; j++) {
+        ctx.lineTo(shape.points[j].x, shape.points[j].y);
       }
       ctx.stroke();
       ctx.closePath();
       if (i === selectedIndex) {
         const xs = shape.points.map((p) => p.x);
         const ys = shape.points.map((p) => p.y);
-        const minX = Math.min(...xs) + pan.x - 4;
-        const minY = Math.min(...ys) + pan.y - 4;
+        const minX = Math.min(...xs) - 4;
+        const minY = Math.min(...ys) - 4;
         const width = Math.max(...xs) - Math.min(...xs) + 8;
         const height = Math.max(...ys) - Math.min(...ys) + 8;
         ctx.strokeStyle = "rgba(0, 153, 255)";
@@ -448,20 +612,22 @@ function clearCanvas(
     } else if (shape.type === "text") {
       ctx.fillStyle = "rgba(255, 255, 255)";
       ctx.font = "20px sans-serif";
-      ctx.fillText(shape.text, shape.x + pan.x, shape.y + pan.y);
+      ctx.fillText(shape.text, shape.x, shape.y);
       if (i === selectedIndex) {
         const width = 10 * shape.text.length;
         const height = 24;
         ctx.strokeStyle = "rgba(0, 153, 255)";
         ctx.strokeRect(
-          shape.x + pan.x - 4,
-          shape.y + pan.y - height - 4,
+          shape.x - 4,
+          shape.y - height - 4,
           width + 8,
           height + 8
         );
       }
     }
   });
+
+  ctx.restore();
 }
 
 function isPointInShape(x: number, y: number, shape: Shape): boolean {
@@ -489,7 +655,7 @@ function isPointInShape(x: number, y: number, shape: Shape): boolean {
       shape.endX,
       shape.endY
     );
-    return dist < 8; // threshold
+    return dist < 8;
   } else if (shape.type === "polygon") {
     const [a, b, c] = shape.points;
     return pointInTriangle({ x, y }, a, b, c);
@@ -569,15 +735,3 @@ function pointInTriangle(
   const u = 1 - s - t;
   return s >= 0 && t >= 0 && u >= 0;
 }
-
-// async function getExistingShapes(roomId: string) {
-//   const res = await axios.get(`${HTTP_BACKEND}/chats/${roomId}`);
-//   const messages = res.data.messages;
-
-//   const shapes = messages.map((x: { message: string }) => {
-//     const messageData = JSON.parse(x.message);
-//     return messageData.shape;
-//   });
-
-//   return shapes;
-// }
